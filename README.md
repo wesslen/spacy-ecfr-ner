@@ -1,8 +1,8 @@
 <!-- SPACY PROJECT: AUTO-GENERATED DOCS START (do not remove) -->
 
-# 🪐 spaCy Project: Demo NER in a new pipeline (Named Entity Recognition)
+# 🪐 spaCy Project: NER on ECFR Banking Regulation in a new pipeline (Named Entity Recognition)
 
-A minimal demo NER project for spaCy v3 adapted from the spaCy v2 [`train_ner.py`](https://github.com/explosion/spaCy/blob/v2.3.x/examples/training/train_ner.py) example script for creating an NER component in a new pipeline.
+Custom NER project for spaCy v3 adapted from the spaCy v3 [`ner_demo`](https://github.com/explosion/projects/tree/9d5fce5f95ddf5f35c3370b2074b25e995525f51/pipelines/ner_demo) example script for creating an NER component in a new pipeline.
 
 ## 📋 project.yml
 
