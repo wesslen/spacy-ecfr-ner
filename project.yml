@@ -2,8 +2,10 @@ title: "NER on ECFR Banking Regulation in a new pipeline (Named Entity Recogniti
 description: "Custom NER project for spaCy v3 adapted from the spaCy v3 [`ner_demo`](https://github.com/explosion/projects/tree/9d5fce5f95ddf5f35c3370b2074b25e995525f51/pipelines/ner_demo) example script for creating an NER component in a new pipeline."
 # Variables can be referenced across the project.yml using ${vars.var_name}
 vars:
-  name: "spacy-ecfr-ner"
+  annotations: "assets/annotations.jsonl"
+  name: "assets/ecfr-sample_sents.jsonl"
   lang: "en"
+  sent_dev: "ecfr_sample_sents"
   train: "train.json"
   dev: "dev.json"
   version: "0.0.0"
@@ -23,6 +25,8 @@ assets:
     description: "Demo training data converted from the v2 `train_ner.py` example with `srsly.write_json(\"train.json\", TRAIN_DATA)`"
   - dest: "assets/dev.json"
     description: "Demo development data"
+  - dest: ${vars.annotations}
+    description: "Gold-standard REL annotations created with Prodigy"
 
 # Workflows are sequences of commands (see below) executed in order. You can
 # run them via "spacy project run [workflow]". If a commands's inputs/outputs
@@ -44,6 +48,22 @@ commands:
     help: "Download a spaCy model with pretrained vectors"
     script:
       - "python -m spacy download ${vars.vectors_model}"
+
+  - name: "train-senter"
+    help: "Train a custom sentence/parser for ECFR"
+    script:
+      - "prodigy train senter --senter ecfr_sample_sents"
+
+  - name: "data"
+    help: "Parse the gold-standard annotations from the Prodigy annotations."
+    script:
+      - "python ./scripts/parse_data.py ${vars.annotations} ${vars.train_file} ${vars.dev_file} ${vars.test_file}"
+    deps:
+      - ${vars.annotations}
+    outputs:
+      - ${vars.train_file}
+      - ${vars.dev_file}
+      - ${vars.test_file}
 
   - name: "convert"
     help: "Convert the data to spaCy's binary format"
