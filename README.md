@@ -19,12 +19,12 @@ Commands are only re-run if their inputs have changed.
 | Command | Description |
 | --- | --- |
 | `download` | Download a spaCy model with pretrained vectors |
+| `train-senter` | Train a custom sentence/parser for ECFR |
 | `convert` | Convert the data to spaCy's binary format |
 | `create-config` | Create a new config with an NER pipeline component |
 | `train` | Train the NER model |
 | `train-with-vectors` | Train the NER model with vectors |
 | `evaluate` | Evaluate the model and export metrics |
-| `package` | Package the trained model as a pip package |
 | `visualize-model` | Visualize the model's output interactively using Streamlit |
 
 ### ⏭ Workflows
@@ -36,7 +36,7 @@ inputs have changed.
 
 | Workflow | Steps |
 | --- | --- |
-| `all` | `convert` &rarr; `create-config` &rarr; `train` &rarr; `evaluate` |
+| `all` | `convert` &rarr; `create-config` &rarr; `train-senter` &rarr; `evaluate` |
 
 ### 🗂 Assets
 
@@ -46,7 +46,12 @@ in the project directory.
 
 | File | Source | Description |
 | --- | --- | --- |
-| [`assets/train.json`](assets/train.json) | Local | Demo training data converted from the v2 `train_ner.py` example with `srsly.write_json("train.json", TRAIN_DATA)` |
-| [`assets/dev.json`](assets/dev.json) | Local | Demo development data |
+| `assets/train.json` | Local | Demo training data converted from the v2 `train_ner.py` example with `srsly.write_json("train.json", TRAIN_DATA)` |
+| `assets/dev.json` | Local | Demo development data |
+| `assets/ecfr-sample_sents.jsonl` | Local | Gold-standard REL annotations created with Prodigy |
+| [`assets/ecfr-sample-sents.jsonl`](assets/ecfr-sample-sents.jsonl) | Local | Sample sentences of ECFR labeled with Prodigy |
+| [`assets/sample-ecfr12.jsonl`](assets/sample-ecfr12.jsonl) | Local | 1% sample sentences for Sentence Segmenter |
+| [`assets/patterns.jsonl`](assets/patterns.jsonl) | Local | Patterns for sections, cites, and laws for NER training |
+| [`assets/ecfr-title-12.jsonl`](assets/ecfr-title-12.jsonl) | Local | Full ECFR 12 by section |
 
 <!-- SPACY PROJECT: AUTO-GENERATED DOCS END (do not remove) -->
