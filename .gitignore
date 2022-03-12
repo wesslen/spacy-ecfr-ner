@@ -162,5 +162,6 @@ corpus
 training
 packages
 senter
+ner-model
 
 .DS_Store
