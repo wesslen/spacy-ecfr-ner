@@ -156,12 +156,10 @@ corpus/
 models/
 wandb/
 
-
-configs
 corpus
 training
 packages
 senter
-ner-model
+ner-model/
 
 .DS_Store

@@ -3,18 +3,30 @@ convert:
   script:
     - python scripts/convert_ner.py en assets/ner_train.jsonl corpus/ner_train.spacy
     - python scripts/convert_ner.py en assets/ner_valid.jsonl corpus/ner_valid.spacy
+    - python scripts/convert_senter.py en assets/senter_train.jsonl corpus/senter_train.spacy
+    - python scripts/convert_senter.py en assets/senter_valid.jsonl corpus/senter_valid.spacy
   deps:
     - path: assets/ner_train.jsonl
       md5: e0fb3b0f4c99bc103c166028338f1b6a
     - path: assets/ner_valid.jsonl
       md5: c20910505436b1577657da1169bab36b
+    - path: assets/senter_train.jsonl
+      md5: f6a06405e874c4acd9374c2072b4be83
+    - path: assets/senter_valid.jsonl
+      md5: 6f3c0f29f54529747f597711cac22201
     - path: scripts/convert_ner.py
       md5: 9004e1545bc07e1ee00c85ca016e0afe
+    - path: scripts/convert_senter.py
+      md5: b84ab83edabae8f7de6ce8e5892ac180
   outs:
     - path: corpus/ner_train.spacy
       md5: 0c384c2eb7d649b68ba4fedb55c885c4
     - path: corpus/ner_valid.spacy
       md5: 46e203020f092d82f3e9743c64a770e7
+    - path: corpus/senter_train.spacy
+      md5: 8f57d827f72b404f11620cbff36e730c
+    - path: corpus/senter_valid.spacy
+      md5: c9197d0564c527442f4eff4c8df0a88f
   spacy_version: 3.2.3
   spacy_git_version: 99425de36
 create-config:
@@ -30,34 +42,32 @@ create-config:
 train:
   cmd: python -m spacy run train
   script:
-    - python -m spacy train configs/config.cfg --output training/ --paths.train corpus/ner_train.spacy
-      --paths.dev corpus/ner_valid.spacy --gpu-id -1 --initialize.vectors en_core_web_md
-      --components.tok2vec.model.embed.include_static_vectors true
+    - python -m spacy train configs/config.cfg --output training/ --gpu-id -1 --initialize.vectors
+      en_core_web_md --components.tok2vec.model.embed.include_static_vectors true
   deps:
     - path: configs/config.cfg
-      md5: 7c50bc79d3da80800556d206a6c8a167
-    - path: corpus/ner_train.spacy
-      md5: 0c384c2eb7d649b68ba4fedb55c885c4
-    - path: corpus/ner_valid.spacy
-      md5: 46e203020f092d82f3e9743c64a770e7
+      md5: 3d819b329a35045d81787e9452f45f3f
+    - path: corpus/train.spacy
+      md5: 29d1d1e7c2eaa365b86fbe68776c44fa
+    - path: corpus/dev.spacy
+      md5: 983e44b539ab6a20c0a013f13d472cd1
   outs:
     - path: training/model-best
-      md5: c85efc1b5c01694e1206d78bd0828f24
+      md5: 4cb80b4a139783b4ad1b293ae26c8670
   spacy_version: 3.2.3
   spacy_git_version: 99425de36
 evaluate:
   cmd: python -m spacy run evaluate
   script:
-    - python -m spacy evaluate training/model-best corpus/ner_valid.spacy --output
-      training/metrics.json
+    - python -m spacy evaluate training/model-best corpus/dev.spacy --output training/metrics.json
   deps:
-    - path: corpus/ner_valid.spacy
-      md5: 46e203020f092d82f3e9743c64a770e7
+    - path: corpus/dev.spacy
+      md5: 983e44b539ab6a20c0a013f13d472cd1
     - path: training/model-best
-      md5: c85efc1b5c01694e1206d78bd0828f24
+      md5: 4cb80b4a139783b4ad1b293ae26c8670
   outs:
     - path: training/metrics.json
-      md5: 76c7c768c0d5b617fa7ee53e30d7484a
+      md5: 8161ee5b9f4dc6ad388f87268848d8a9
   spacy_version: 3.2.3
   spacy_git_version: 99425de36
 partition:
@@ -76,5 +86,55 @@ download:
     - python -m spacy download en_core_web_md
   deps: []
   outs: []
+  spacy_version: 3.2.3
+  spacy_git_version: 99425de36
+train-senter:
+  cmd: python -m spacy run train-senter
+  script:
+    - prodigy train senter --senter ecfr_labeled_sents
+  deps: []
+  outs: []
+  spacy_version: 3.2.3
+  spacy_git_version: 99425de36
+clean:
+  cmd: python -m spacy run clean
+  script:
+    - rm -rf training
+    - rm -rf corpus
+    - rm -rf packages
+  deps: []
+  outs: []
+  spacy_version: 3.2.3
+  spacy_git_version: 99425de36
+data-to-spacy:
+  cmd: python -m spacy run data-to-spacy
+  script:
+    - python -m prodigy data-to-spacy corpus/ --senter ecfr_labeled_sents --ner ecfr_initial_ner
+  deps: []
+  outs:
+    - path: corpus/train.spacy
+      md5: 29d1d1e7c2eaa365b86fbe68776c44fa
+    - path: corpus/dev.spacy
+      md5: 983e44b539ab6a20c0a013f13d472cd1
+  spacy_version: 3.2.3
+  spacy_git_version: 99425de36
+data-to-asset-senter:
+  cmd: python -m spacy run data-to-asset-senter
+  script:
+    - python -m prodigy db-out ecfr_labeled_sents assets/ecfr_senter_labels.jsonl
+  deps: []
+  outs:
+    - path: assets
+      md5: 6e226cca080f5c11630c76cf9912741a
+  spacy_version: 3.2.3
+  spacy_git_version: 99425de36
+data-to-asset-ner:
+  cmd: python -m spacy run data-to-asset-ner
+  script:
+    - python -m prodigy db-out ecfr_initial_ner assets/ecfr_ner_labels.jsonl
+  deps: []
+  outs:
+    - path: assets
+      md5: 24e816efd133f3c42d9f466b00badee5
   spacy_version: 3.2.3
   spacy_git_version: 99425de36

@@ -3,15 +3,19 @@ description: "Custom NER project for spaCy v3 adapted from the spaCy v3 [`ner_de
 # Variables can be referenced across the project.yml using ${vars.var_name}
 vars:
   lang: "en"
-  senter_train: "senter_train.jsonl" 
-  senter_valid: "senter_valid.jsonl" 
-  ner_train: "ner_train.jsonl" 
-  ner_valid: "ner_valid.jsonl" 
-  version: "0.0.1"
+  train: corpus/train.spacy
+  dev: corpus/dev.spacy
+  version: "0.1.0"
   # Set your GPU ID, -1 is CPU
   gpu_id: -1
   # Vectors model for train-with-vectors
-  vectors_model: "en_core_web_md"
+  vectors_model: "en_core_web_lg"
+  prodigy:
+    ner_labels: ecfr_initial_ner
+    senter_labels: ecfr_labeled_sents
+  assets:
+    ner_labels: assets/ecfr_ner_labels.jsonl
+    senter_labels: assets/ecfr_senter_labels.jsonl
 
 # These are the directories that the project needs. The project CLI will make
 # sure that they always exist.
@@ -20,14 +24,6 @@ directories: ["assets", "corpus", "configs", "training", "scripts", "packages"]
 # Assets that should be downloaded or available in the directory. We're shipping
 # them with the project, so they won't have to be downloaded.
 assets:
-  - dest: ${vars.ner_train}
-    description: "NER training examples"
-  - dest: ${vars.ner_valid}
-    description: "NER validation examples"
-  - dest: ${vars.senter_train}
-    description: "Senter training examples"
-  - dest: ${vars.senter_valid}
-    description: "Senter validation examples"
   - dest: "assets/patterns.jsonl"
     description: "Patterns for sections, cites, and laws for NER training"
 
@@ -37,11 +33,8 @@ assets:
 workflows:
   all:
     - download
-    - partition
-    - convert
-    - train-senter
-    - train-ner
-    # - train-with-vectors
+    - data-to-spacy
+    - train
     - evaluate
 
 # Project commands, specified in a style similar to CI config files (e.g. Azure
@@ -54,47 +47,45 @@ commands:
     script:
       - "python -m spacy download ${vars.vectors_model}"
 
-  - name: "partition"
-    help: "Partition annotations to train vs validation splits"
+  - name: "data-to-spacy"
+    help: "Merge your annotations and create data in spaCy's binary format"
     script:
-      - "python scripts/partition.py assets/ecfr_ner.jsonl assets/${vars.ner_train} assets/${vars.ner_valid}"
-      - "python scripts/partition.py assets/ecfr_sents.jsonl assets/${vars.senter_train} assets/${vars.senter_valid}"
-
-  - name: "convert"
-    help: "Convert data to spaCy's binary format"
-    script:
-      - "python scripts/convert_ner.py ${vars.lang} assets/${vars.ner_train} corpus/ner_train.spacy"
-      - "python scripts/convert_ner.py ${vars.lang} assets/${vars.ner_valid} corpus/ner_valid.spacy"
-    deps:
-      - "assets/${vars.ner_train}"
-      - "assets/${vars.ner_valid}"
-      - "scripts/convert_ner.py"
+      - "python -m prodigy data-to-spacy corpus/ --senter ${vars.prodigy.senter_labels} --ner ${vars.prodigy.ner_labels}"
     outputs:
-      - "corpus/ner_train.spacy"
-      - "corpus/ner_valid.spacy"
-
-  - name: "train-senter"
-    help: "Train a custom sentence/parser for ECFR"
+      - "corpus/train.spacy"
+      - "corpus/dev.spacy"
+  
+  - name: "data-to-asset-senter"
+    help: "Export senter annotations to assets"
     script:
-      - "prodigy train senter --senter ecfr_labeled_sents"
+      - "python -m prodigy db-out ${vars.prodigy.senter_labels} ${vars.assets.senter_labels}"
+    outputs:
+      - "assets"
 
-  - name: "train-ner"
-    help: "Train the NER model"
+  - name: "data-to-asset-ner"
+    help: "Export NER annotations to assets"
     script:
-      - "python -m spacy train configs/config.cfg --output training/ --paths.train corpus/ner_train.spacy --paths.dev corpus/ner_valid.spacy --training.eval_frequency 10 --training.patience 50 --gpu-id ${vars.gpu_id} --initialize.vectors ${vars.vectors_model} --components.tok2vec.model.embed.include_static_vectors true"
+      - "python -m prodigy db-out ${vars.prodigy.ner_labels} ${vars.assets.ner_labels}"
+    outputs:
+      - "assets"
+
+  - name: "train"
+    help: "Train pipeline models"
+    script:
+      - "python -m spacy train configs/config.cfg --output training/ --gpu-id ${vars.gpu_id} --initialize.vectors ${vars.vectors_model} --components.tok2vec.model.embed.include_static_vectors true"
     deps:
       - "configs/config.cfg"
-      - "corpus/ner_train.spacy"
-      - "corpus/ner_valid.spacy"
+      - "corpus/train.spacy"
+      - "corpus/dev.spacy"
     outputs:
       - "training/model-best"
 
   - name: "evaluate"
     help: "Evaluate the model and export metrics"
     script:
-      - "python -m spacy evaluate training/model-best corpus/ner_valid.spacy --output training/metrics.json"
+      - "python -m spacy evaluate training/model-best corpus/dev.spacy --output training/metrics.json"
     deps:
-      - "corpus/ner_valid.spacy"
+      - "corpus/dev.spacy"
       - "training/model-best"
     outputs:
       - "training/metrics.json"
@@ -115,3 +106,17 @@ commands:
     deps:
       - "scripts/visualize_model.py"
       - "training/model-best"
+
+  - name: setup
+    help: Install dependencies
+    script:
+      - "python -m pip install -r requirements.txt"
+    deps:
+      - "requirements.txt"
+
+  - name: clean
+    help: "Remove intermediate files"
+    script:
+      - "rm -rf training"
+      - "rm -rf corpus"
+      - "rm -rf packages"
