@@ -48,8 +48,12 @@ in the project directory.
 
 | File | Source | Description |
 | --- | --- | --- |
-| `assets/patterns.jsonl` | Local | Patterns for sections, cites, and laws for NER training |
 | [`assets/ecfr_ner_labels.jsonl`](assets/ecfr_ner_labels.jsonl) | Local | 400 initial NER labels of sections, cites, and laws |
+| [`assets/patterns.jsonl`](assets/patterns.jsonl) | Local | Patterns for sections, cites, and laws for initial NER training |
 | [`assets/ecfr_senter_labels.jsonl`](assets/ecfr_senter_labels.jsonl) | Local | 150 initial sentence segmentations of eCFR sub-sections |
+| [`assets/raw-files/ecfr-sample-sents.jsonl`](assets/raw-files/ecfr-sample-sents.jsonl) | Local | Sample of Prodigy annotated sentences from ecfr-sample-title-12.jsonl file |
+| [`assets/raw-files/ecfr-sample-title-12.jsonl`](assets/raw-files/ecfr-sample-title-12.jsonl) | Local | Sample of 47 records (sub-sections) from ecfr-title-12.jsonl |
+| [`assets/raw-files/ecfr-title-12.jsonl`](assets/raw-files/ecfr-title-12.jsonl) | Local | eCFR Title 12 (Banking) parsed as a jsonl file |
+| [`assets/raw-files/ecfr-title-12-sent.jsonl`](assets/raw-files/ecfr-title-12-sent.jsonl) | Local | Senter scored model segmenting ecfr-title-12.jsonl |
 
 <!-- SPACY PROJECT: AUTO-GENERATED DOCS END (do not remove) -->

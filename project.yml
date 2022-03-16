@@ -24,12 +24,20 @@ directories: ["assets", "corpus", "configs", "training", "scripts"]
 # Assets that should be downloaded or available in the directory. We're shipping
 # them with the project, so they won't have to be downloaded.
 assets:
-  - dest: "assets/patterns.jsonl"
-    description: "Patterns for sections, cites, and laws for NER training"
   - dest: "assets/ecfr_ner_labels.jsonl"
     description: "400 initial NER labels of sections, cites, and laws"
+  - dest: "assets/patterns.jsonl"
+    description: "Patterns for sections, cites, and laws for initial NER training"
   - dest: "assets/ecfr_senter_labels.jsonl"
     description: "150 initial sentence segmentations of eCFR sub-sections"
+  - dest: "assets/raw-files/ecfr-sample-sents.jsonl"
+    description: "Sample of Prodigy annotated sentences from ecfr-sample-title-12.jsonl file"
+  - dest: "assets/raw-files/ecfr-sample-title-12.jsonl"
+    description: "Sample of 47 records (sub-sections) from ecfr-title-12.jsonl"
+  - dest: "assets/raw-files/ecfr-title-12.jsonl"
+    description: "eCFR Title 12 (Banking) parsed as a jsonl file"
+  - dest: "assets/raw-files/ecfr-title-12-sent.jsonl"
+    description: "Senter scored model segmenting ecfr-title-12.jsonl"
 
 # Workflows are sequences of commands (see below) executed in order. You can
 # run them via "spacy project run [workflow]". If a commands's inputs/outputs
