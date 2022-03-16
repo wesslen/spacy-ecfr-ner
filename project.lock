@@ -138,3 +138,11 @@ data-to-asset-ner:
       md5: 24e816efd133f3c42d9f466b00badee5
   spacy_version: 3.2.3
   spacy_git_version: 99425de36
+document:
+  cmd: python -m spacy run document
+  script:
+    - spacy project document --output README.md
+  deps: []
+  outs: []
+  spacy_version: 3.2.3
+  spacy_git_version: 99425de36

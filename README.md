@@ -1,6 +1,6 @@
 <!-- SPACY PROJECT: AUTO-GENERATED DOCS START (do not remove) -->
 
-# 🪐 spaCy Project: NER on ECFR Banking Regulation in a new pipeline (Named Entity Recognition)
+# 🪐 spaCy Project: NER Citations of ECFR Banking Regulation in a spaCy pipeline.
 
 Custom NER project for spaCy v3 adapted from the spaCy v3 [`ner_demo`](https://github.com/explosion/projects/tree/9d5fce5f95ddf5f35c3370b2074b25e995525f51/pipelines/ner_demo) example script for creating an NER component in a new pipeline.
 
@@ -19,13 +19,15 @@ Commands are only re-run if their inputs have changed.
 | Command | Description |
 | --- | --- |
 | `download` | Download a spaCy model with pretrained vectors |
-| `train-senter` | Train a custom sentence/parser for ECFR |
-| `convert` | Convert the data to spaCy's binary format |
-| `create-config` | Create a new config with an NER pipeline component |
-| `train` | Train the NER model |
-| `train-with-vectors` | Train the NER model with vectors |
+| `data-to-spacy` | Merge your annotations and create data in spaCy's binary format |
+| `data-to-asset-senter` | Export senter annotations to assets |
+| `data-to-asset-ner` | Export NER annotations to assets |
+| `train` | Train pipeline models |
 | `evaluate` | Evaluate the model and export metrics |
 | `visualize-model` | Visualize the model's output interactively using Streamlit |
+| `setup` | Install dependencies |
+| `clean` | Remove intermediate files |
+| `document` | Export README for project details |
 
 ### ⏭ Workflows
 
@@ -36,7 +38,7 @@ inputs have changed.
 
 | Workflow | Steps |
 | --- | --- |
-| `all` | `convert` &rarr; `create-config` &rarr; `train-senter` &rarr; `evaluate` |
+| `all` | `download` &rarr; `data-to-spacy` &rarr; `train` &rarr; `evaluate` |
 
 ### 🗂 Assets
 
@@ -46,12 +48,8 @@ in the project directory.
 
 | File | Source | Description |
 | --- | --- | --- |
-| `assets/train.json` | Local | Demo training data converted from the v2 `train_ner.py` example with `srsly.write_json("train.json", TRAIN_DATA)` |
-| `assets/dev.json` | Local | Demo development data |
-| `assets/ecfr-sample_sents.jsonl` | Local | Gold-standard REL annotations created with Prodigy |
-| [`assets/ecfr-sample-sents.jsonl`](assets/ecfr-sample-sents.jsonl) | Local | Sample sentences of ECFR labeled with Prodigy |
-| [`assets/sample-ecfr12.jsonl`](assets/sample-ecfr12.jsonl) | Local | 1% sample sentences for Sentence Segmenter |
-| [`assets/patterns.jsonl`](assets/patterns.jsonl) | Local | Patterns for sections, cites, and laws for NER training |
-| [`assets/ecfr-title-12.jsonl`](assets/ecfr-title-12.jsonl) | Local | Full ECFR 12 by section |
+| `assets/patterns.jsonl` | Local | Patterns for sections, cites, and laws for NER training |
+| [`assets/ecfr_ner_labels.jsonl`](assets/ecfr_ner_labels.jsonl) | Local | 400 initial NER labels of sections, cites, and laws |
+| [`assets/ecfr_senter_labels.jsonl`](assets/ecfr_senter_labels.jsonl) | Local | 150 initial sentence segmentations of eCFR sub-sections |
 
 <!-- SPACY PROJECT: AUTO-GENERATED DOCS END (do not remove) -->

@@ -1,4 +1,4 @@
-title: "NER on ECFR Banking Regulation in a new pipeline (Named Entity Recognition)"
+title: "NER Citations of ECFR Banking Regulation in a spaCy pipeline."
 description: "Custom NER project for spaCy v3 adapted from the spaCy v3 [`ner_demo`](https://github.com/explosion/projects/tree/9d5fce5f95ddf5f35c3370b2074b25e995525f51/pipelines/ner_demo) example script for creating an NER component in a new pipeline."
 # Variables can be referenced across the project.yml using ${vars.var_name}
 vars:
@@ -19,13 +19,17 @@ vars:
 
 # These are the directories that the project needs. The project CLI will make
 # sure that they always exist.
-directories: ["assets", "corpus", "configs", "training", "scripts", "packages"]
+directories: ["assets", "corpus", "configs", "training", "scripts"]
 
 # Assets that should be downloaded or available in the directory. We're shipping
 # them with the project, so they won't have to be downloaded.
 assets:
   - dest: "assets/patterns.jsonl"
     description: "Patterns for sections, cites, and laws for NER training"
+  - dest: "assets/ecfr_ner_labels.jsonl"
+    description: "400 initial NER labels of sections, cites, and laws"
+  - dest: "assets/ecfr_senter_labels.jsonl"
+    description: "150 initial sentence segmentations of eCFR sub-sections"
 
 # Workflows are sequences of commands (see below) executed in order. You can
 # run them via "spacy project run [workflow]". If a commands's inputs/outputs
@@ -120,3 +124,8 @@ commands:
       - "rm -rf training"
       - "rm -rf corpus"
       - "rm -rf packages"
+
+  - name: document
+    help: "Export README for project details"
+    script:
+      - "spacy project document --output README.md"
