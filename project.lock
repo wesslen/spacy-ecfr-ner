@@ -43,17 +43,17 @@ train:
   cmd: python -m spacy run train
   script:
     - python -m spacy train configs/config.cfg --output training/ --gpu-id -1 --initialize.vectors
-      en_core_web_md --components.tok2vec.model.embed.include_static_vectors true
+      en_core_web_lg --components.tok2vec.model.embed.include_static_vectors true
   deps:
     - path: configs/config.cfg
-      md5: 3d819b329a35045d81787e9452f45f3f
+      md5: cc5e771dda6199a127ad272bf9e02c42
     - path: corpus/train.spacy
-      md5: 29d1d1e7c2eaa365b86fbe68776c44fa
+      md5: 4dac9cdea512c17a4c63671dec08bafa
     - path: corpus/dev.spacy
-      md5: 983e44b539ab6a20c0a013f13d472cd1
+      md5: b8eba5abc5f9abb957d8242bd540c2c8
   outs:
     - path: training/model-best
-      md5: 4cb80b4a139783b4ad1b293ae26c8670
+      md5: ec595899e24fc4d212adc09f3ed46801
   spacy_version: 3.2.3
   spacy_git_version: 99425de36
 evaluate:
@@ -62,12 +62,12 @@ evaluate:
     - python -m spacy evaluate training/model-best corpus/dev.spacy --output training/metrics.json
   deps:
     - path: corpus/dev.spacy
-      md5: 983e44b539ab6a20c0a013f13d472cd1
+      md5: b8eba5abc5f9abb957d8242bd540c2c8
     - path: training/model-best
-      md5: 4cb80b4a139783b4ad1b293ae26c8670
+      md5: ec595899e24fc4d212adc09f3ed46801
   outs:
     - path: training/metrics.json
-      md5: 8161ee5b9f4dc6ad388f87268848d8a9
+      md5: 29cab9e69b7e18eb48e17aeb690e5a69
   spacy_version: 3.2.3
   spacy_git_version: 99425de36
 partition:
@@ -83,7 +83,7 @@ partition:
 download:
   cmd: python -m spacy run download
   script:
-    - python -m spacy download en_core_web_md
+    - python -m spacy download en_core_web_lg
   deps: []
   outs: []
   spacy_version: 3.2.3
@@ -109,13 +109,13 @@ clean:
 data-to-spacy:
   cmd: python -m spacy run data-to-spacy
   script:
-    - python -m prodigy data-to-spacy corpus/ --senter ecfr_labeled_sents --ner ecfr_initial_ner
+    - python -m prodigy data-to-spacy corpus/ --senter ecfr_labeled_sents --ner ecfr_labeled_ner
   deps: []
   outs:
     - path: corpus/train.spacy
-      md5: 29d1d1e7c2eaa365b86fbe68776c44fa
+      md5: 4dac9cdea512c17a4c63671dec08bafa
     - path: corpus/dev.spacy
-      md5: 983e44b539ab6a20c0a013f13d472cd1
+      md5: b8eba5abc5f9abb957d8242bd540c2c8
   spacy_version: 3.2.3
   spacy_git_version: 99425de36
 data-to-asset-senter:
@@ -144,5 +144,18 @@ document:
     - spacy project document --output README.md
   deps: []
   outs: []
+  spacy_version: 3.2.3
+  spacy_git_version: 99425de36
+package:
+  cmd: python -m spacy run package
+  script:
+    - python -m spacy package training/model-best packages --name ecfr_ner --version
+      0.1.0 --force
+  deps:
+    - path: training/model-best
+      md5: ec595899e24fc4d212adc09f3ed46801
+  outs:
+    - path: packages/en_ecfr_ner-0.1.0/dist/en_ecfr_ner-0.1.0.tar.gz
+      md5: cc0778ab709aa15aff1a76ea3d8e45e3
   spacy_version: 3.2.3
   spacy_git_version: 99425de36

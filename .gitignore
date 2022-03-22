@@ -152,11 +152,9 @@ cython_debug/
 #.idea/
 
 .vscode/
-corpus/
 models/
 wandb/
 
-corpus
 training
 packages
 senter

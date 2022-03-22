@@ -21,9 +21,13 @@ Commands are only re-run if their inputs have changed.
 | `download` | Download a spaCy model with pretrained vectors |
 | `data-to-spacy` | Merge your annotations and create data in spaCy's binary format |
 | `data-to-asset-senter` | Export senter annotations to assets |
+| `train-curve-ner` | Train curve for NER |
 | `data-to-asset-ner` | Export NER annotations to assets |
 | `train` | Train pipeline models |
 | `evaluate` | Evaluate the model and export metrics |
+| `prodigy-al-ner` | NER prodigy active learning annotaitons |
+| `prodigy-manual-ner` | NER prodigy manual learning annotations |
+| `package` | Package the trained model as a pip package |
 | `visualize-model` | Visualize the model's output interactively using Streamlit |
 | `setup` | Install dependencies |
 | `clean` | Remove intermediate files |
@@ -38,7 +42,7 @@ inputs have changed.
 
 | Workflow | Steps |
 | --- | --- |
-| `all` | `download` &rarr; `data-to-spacy` &rarr; `train` &rarr; `evaluate` |
+| `all` | `download` &rarr; `train` &rarr; `evaluate` &rarr; `package` |
 
 ### 🗂 Assets
 

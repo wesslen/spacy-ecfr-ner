@@ -10,12 +10,19 @@ vars:
   gpu_id: -1
   # Vectors model for train-with-vectors
   vectors_model: "en_core_web_lg"
+  name: ecfr_ner
   prodigy:
     ner_labels: ecfr_initial_ner
+    ner_manual_labels: ecfr_manual_ner
     senter_labels: ecfr_labeled_sents
+    ner_labeled_dataset: ecfr_labeled_ner
   assets:
     ner_labels: assets/ecfr_ner_labels.jsonl
     senter_labels: assets/ecfr_senter_labels.jsonl
+    ner_patterns: assets/patterns.jsonl
+  raw_files:
+    ner_ecfr_raw: assets/raw-files/ecfr-title-12-sent.jsonl
+    ner_ecfr_shuffle: assets/raw-files/ecfr-title-12-sent-shuffle.jsonl
 
 # These are the directories that the project needs. The project CLI will make
 # sure that they always exist.
@@ -45,9 +52,9 @@ assets:
 workflows:
   all:
     - download
-    - data-to-spacy
     - train
     - evaluate
+    - package
 
 # Project commands, specified in a style similar to CI config files (e.g. Azure
 # pipelines). The name is the command name that lets you trigger the command
@@ -62,7 +69,7 @@ commands:
   - name: "data-to-spacy"
     help: "Merge your annotations and create data in spaCy's binary format"
     script:
-      - "python -m prodigy data-to-spacy corpus/ --senter ${vars.prodigy.senter_labels} --ner ${vars.prodigy.ner_labels}"
+      - "python -m prodigy data-to-spacy corpus/ --senter ${vars.prodigy.senter_labels} --ner ${vars.prodigy.ner_labeled_dataset}"
     outputs:
       - "corpus/train.spacy"
       - "corpus/dev.spacy"
@@ -73,6 +80,11 @@ commands:
       - "python -m prodigy db-out ${vars.prodigy.senter_labels} ${vars.assets.senter_labels}"
     outputs:
       - "assets"
+
+  - name: "train-curve-ner"
+    help: "Train curve for NER"
+    script:
+      - "python -m prodigy train-curve --ner ${vars.prodigy.ner_labeled_dataset}"
 
   - name: "data-to-asset-ner"
     help: "Export NER annotations to assets"
@@ -95,26 +107,50 @@ commands:
   - name: "evaluate"
     help: "Evaluate the model and export metrics"
     script:
-      - "python -m spacy evaluate training/model-best corpus/dev.spacy --output training/metrics.json"
+      - "python -m spacy evaluate training/model-best ${vars.dev} --output training/metrics.json"
     deps:
       - "corpus/dev.spacy"
       - "training/model-best"
     outputs:
       - "training/metrics.json"
 
-  # - name: package
-  #   help: "Package the trained model as a pip package"
+  - name: "prodigy-al-ner"
+    help: "NER prodigy active learning annotaitons"
+    script: 
+      - "python -m prodigy ner.teach ${vars.prodigy.ner_labeled_dataset} training/model-best ${vars.raw_files.ner_ecfr_shuffle} --label SECTION,LAW,CITE,PARAGRAPH,TITLE,SUBTITLE --patterns ${vars.assets.ner_patterns}"
+    deps:
+      - "training/model-best"
+
+  - name: "prodigy-manual-ner"
+    help: "NER prodigy manual learning annotations"
+    script: 
+      - "python -m prodigy ner.manual ${vars.prodigy.ner_manual_labels} training/model-best ${vars.raw_files.ner_ecfr_shuffle} --label SECTION,LAW,CITE,PARAGRAPH,TITLE,SUBTITLE --patterns ${vars.assets.ner_patterns}"
+    deps:
+      - "training/model-best"
+    
+
+  # - name: "shuffle"
+  #   help: "Shuffle jsonl files for Prodigy"
   #   script:
-  #     - "python -m spacy package training/model-best packages --name ${vars.name} --version ${vars.version} --force"
+  #     -"python -m scripts/shuffle.py ${vars.raw_files.ner_ecfr_raw} ${vars.raw_files.ner_ecfr_shuffle}"
   #   deps:
-  #     - "training/model-best"
-  #   outputs_no_cache:
-  #     - "packages/${vars.lang}_${vars.name}-${vars.version}/dist/${vars.lang}_${vars.name}-${vars.version}.tar.gz"
+  #     - "${vars.raw_files.ner_ecfr_raw}"
+  #   outputs:
+  #     - "${vars.raw_files.ner_ecfr_shuffle}"
+
+  - name: package
+    help: "Package the trained model as a pip package"
+    script:
+      - "python -m spacy package training/model-best packages --name ${vars.name} --version ${vars.version} --force"
+    deps:
+      - "training/model-best"
+    outputs_no_cache:
+      - "packages/${vars.lang}_${vars.name}-${vars.version}/dist/${vars.lang}_${vars.name}-${vars.version}.tar.gz"
 
   - name: visualize-model
     help: Visualize the model's output interactively using Streamlit
     script:
-      - "streamlit run scripts/visualize_model.py training/model-best \"(B) For purposes of paragraph (c)(11)(ii)(A) of this section, the netting set must be divided into sub-netting sets as follows:,\""
+      - "streamlit run scripts/visualize_model.py training/model-best"
     deps:
       - "scripts/visualize_model.py"
       - "training/model-best"
